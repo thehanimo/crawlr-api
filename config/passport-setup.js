@@ -9,7 +9,7 @@ passport.use(
     {
       clientID: keys.linkedIn.clientID,
       clientSecret: keys.linkedIn.clientSecret,
-      callbackURL: "http://hani.local:3000/auth/linkedin/callback",
+      callbackURL: "https://crawlr-api.herokuapp.com/auth/linkedin/callback",
       profileFields: [
         "formatted-name",
         "headline",
