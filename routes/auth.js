@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const passport = require("passport");
 var https = require("https");
+const client = require("../db");
 
 router.get(
   "/app/linkedin",
@@ -60,13 +61,28 @@ router.get("/linkedin/callback", (req, res) => {
 
 router.post("/confirm", (req, res) => {
   //Extract req.body and save provider-id to db here!!
-  statusMessage = "Registered!";
+  client.connect(err => {
+    const collection = client.db("crawlr").collection("user");
+    collection
+      .findOne({ id: req.body.id, provider: req.body.provider })
+      .then(doc => {
+        if (!doc) {
+          collection.insertOne({
+            provider: req.body.provider,
+            id: req.body.id,
+            email: req.body.email
+          });
+        }
+      });
+
+    // perform actions on the collection object
+    client.close();
+  });
   res.status(200).end();
 });
 
 router.post("/register", (req, res) => {
   //Extract req.body and save/update profile to db here!!
-  statusMessage = "Registered!";
   res.status(200).end();
 });
 module.exports = router;
