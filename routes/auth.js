@@ -1,5 +1,6 @@
 var express = require("express");
 var router = express.Router();
+const jwt = require("jsonwebtoken");
 const passport = require("passport");
 var https = require("https");
 const client = require("../db");
@@ -19,39 +20,66 @@ router.post(
     session: false
   }),
   function(req, res) {
-    var photoURI;
-    if (req.user.photos == []) {
-      res.json({
-        provider: req.user.provider,
-        email: req.user.emails[0].value,
-        id: req.user.id,
-        fullName: req.user.name.givenName + " " + req.user.name.familyName,
-        image: null
-      });
-    } else {
-      https
-        .get(req.user.photos[req.user.photos.length - 1].value, resp => {
-          resp.setEncoding("base64");
-          photoURI = "data:" + resp.headers["content-type"] + ";base64,";
-          resp.on("data", data => {
-            photoURI += data;
+    const oauth = client.db("crawlr").collection("oauth");
+    oauth
+      .findOne({ id: req.user.id, provider: req.user.provider })
+      .then(doc => {
+        if (!doc) {
+          oauth.insertOne({
+            provider: req.user.provider,
+            id: req.user.id,
+            email: req.user.emails[0].value
           });
-          resp.on("end", () => {
+          var photoURI;
+          if (req.user.photos == []) {
             res.json({
               provider: req.user.provider,
               email: req.user.emails[0].value,
               id: req.user.id,
               fullName:
                 req.user.name.givenName + " " + req.user.name.familyName,
-              image: photoURI
+              image: null
             });
-            return;
+          } else {
+            https
+              .get(req.user.photos[req.user.photos.length - 1].value, resp => {
+                resp.setEncoding("base64");
+                photoURI = "data:" + resp.headers["content-type"] + ";base64,";
+                resp.on("data", data => {
+                  photoURI += data;
+                });
+                resp.on("end", () => {
+                  res.json({
+                    provider: req.user.provider,
+                    email: req.user.emails[0].value,
+                    id: req.user.id,
+                    fullName:
+                      req.user.name.givenName + " " + req.user.name.familyName,
+                    image: photoURI
+                  });
+                });
+              })
+              .on("error", e => {
+                console.log(`Got error: ${e.message}`);
+              });
+          }
+        } else {
+          const user = client.db("crawlr").collection("user");
+          user.findOne({ email: doc.email }).then(profile => {
+            var token = jwt.sign(
+              JSON.parse(JSON.stringify(doc)),
+              "nodeauthsecret",
+              { expiresIn: 365 * 24 * 60 * 60 * 1000 }
+            );
+            res.json({
+              JWT: "JWT " + token,
+              ...profile
+            });
           });
-        })
-        .on("error", e => {
-          console.log(`Got error: ${e.message}`);
-        });
-    }
+        }
+      });
+
+    // perform actions on the collection object
   }
 );
 
@@ -60,29 +88,42 @@ router.get("/linkedin/callback", (req, res) => {
 });
 
 router.post("/confirm", (req, res) => {
-  //Extract req.body and save provider-id to db here!!
-  client.connect(err => {
-    const collection = client.db("crawlr").collection("user");
-    collection
-      .findOne({ id: req.body.id, provider: req.body.provider })
-      .then(doc => {
-        if (!doc) {
-          collection.insertOne({
-            provider: req.body.provider,
-            id: req.body.id,
-            email: req.body.email
-          });
-        }
+  const oauth = client.db("crawlr").collection("oauth");
+  const user = client.db("crawlr").collection("user");
+  oauth.findOne({ id: req.body.id, provider: req.body.provider }).then(doc => {
+    if (doc) {
+      var token = jwt.sign(JSON.parse(JSON.stringify(doc)), "nodeauthsecret", {
+        expiresIn: 365 * 24 * 60 * 60 * 1000
       });
-
-    // perform actions on the collection object
-    client.close();
+      user
+        .insertOne({
+          email: req.body.email,
+          image: req.body.image,
+          fullName: req.body.fullName,
+          bio: "",
+          isPremiumUser: false
+        })
+        .then(profileResult => {
+          res.json({
+            JWT: "JWT " + token,
+            ...profileResult.ops[0]
+          });
+        });
+    } else {
+      res.status(401).end();
+    }
   });
-  res.status(200).end();
 });
 
 router.post("/register", (req, res) => {
   //Extract req.body and save/update profile to db here!!
   res.status(200).end();
+});
+
+router.post("/test", passport.authenticate("jwt", { session: false }), function(
+  req,
+  res
+) {
+  res.json({ ...req.user });
 });
 module.exports = router;

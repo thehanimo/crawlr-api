@@ -7,4 +7,6 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true
 });
 
+client.connect();
+
 module.exports = client;
