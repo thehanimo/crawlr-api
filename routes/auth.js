@@ -14,6 +14,15 @@ router.get(
   }
 );
 
+router.get(
+  "/webapp/linkedin",
+  passport.authenticate("linkedin", { state: "webapp" }),
+  function(req, res) {
+    // The request will be redirected to LinkedIn for authentication, so this
+    // function will not be called.
+  }
+);
+
 router.post(
   "/linkedin/callback",
   passport.authenticate("linkedin", {
@@ -84,7 +93,12 @@ router.post(
 );
 
 router.get("/linkedin/callback", (req, res) => {
-  res.redirect(`crawlr://login/${req._parsedOriginalUrl.search}`);
+  if (req.query.state === "state")
+    res.redirect(`crawlr://login/${req._parsedOriginalUrl.search}`);
+  else
+    res.redirect(
+      `http://localhost:3000/login/${req._parsedOriginalUrl.search}`
+    );
 });
 
 router.post("/confirm", (req, res) => {
