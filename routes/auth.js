@@ -97,7 +97,7 @@ router.get("/linkedin/callback", (req, res) => {
     res.redirect(`crawlr://login/${req._parsedOriginalUrl.search}`);
   else
     res.redirect(
-      `http://localhost:3000/login/${req._parsedOriginalUrl.search}`
+      `http://localhost:8000/login/${req._parsedOriginalUrl.search}`
     );
 });
 
