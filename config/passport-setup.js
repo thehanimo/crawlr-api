@@ -12,8 +12,8 @@ const opts = {
 passport.use(
   "jwt",
   new JwtStrategy(opts, function(jwt_payload, done) {
-    const oauth = client.db("crawlr").collection("oauth");
-    oauth
+    const user = client.db("crawlr").collection("user");
+    user
       .findOne({ id: jwt_payload.id, provider: jwt_payload.provider })
       .then(doc => {
         return done(null, doc);

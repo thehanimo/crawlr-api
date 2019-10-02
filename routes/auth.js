@@ -29,16 +29,22 @@ router.post(
     session: false
   }),
   function(req, res) {
-    const oauth = client.db("crawlr").collection("oauth");
-    oauth
-      .findOne({ id: req.user.id, provider: req.user.provider })
+    const user = client.db("crawlr").collection("user");
+    user
+      .findOne(
+        { id: req.user.id, provider: req.user.provider },
+        { id: 1, provider: 1, fullName: 1 }
+      )
       .then(doc => {
-        if (!doc) {
-          oauth.insertOne({
-            provider: req.user.provider,
-            id: req.user.id,
-            email: req.user.emails[0].value
-          });
+        if (!doc || !doc.fullName) {
+          //Check if new user or unconfirmed user
+          if (!doc) {
+            user.insertOne({
+              provider: req.user.provider,
+              id: req.user.id,
+              email: req.user.emails[0].value
+            });
+          }
           var photoURI;
           if (req.user.photos == []) {
             res.json({
@@ -73,22 +79,17 @@ router.post(
               });
           }
         } else {
-          const user = client.db("crawlr").collection("user");
-          user.findOne({ email: doc.email }).then(profile => {
-            var token = jwt.sign(
-              JSON.parse(JSON.stringify(doc)),
-              "nodeauthsecret",
-              { expiresIn: 365 * 24 * 60 * 60 * 1000 }
-            );
-            res.json({
-              JWT: "JWT " + token,
-              ...profile
-            });
+          var token = jwt.sign(
+            JSON.parse(JSON.stringify({ id: doc.id, provider: doc.provider })),
+            "nodeauthsecret",
+            { expiresIn: 365 * 24 * 60 * 60 * 1000 }
+          );
+          res.json({
+            JWT: "JWT " + token,
+            ...profile
           });
         }
       });
-
-    // perform actions on the collection object
   }
 );
 
@@ -102,30 +103,43 @@ router.get("/linkedin/callback", (req, res) => {
 });
 
 router.post("/confirm", (req, res) => {
-  const oauth = client.db("crawlr").collection("oauth");
   const user = client.db("crawlr").collection("user");
-  oauth.findOne({ id: req.body.id, provider: req.body.provider }).then(doc => {
-    if (doc) {
-      var token = jwt.sign(JSON.parse(JSON.stringify(doc)), "nodeauthsecret", {
-        expiresIn: 365 * 24 * 60 * 60 * 1000
-      });
-      user
-        .insertOne({
-          email: doc.email,
-          image: req.body.image,
-          fullName: req.body.fullName,
-          bio: "",
-          isPremiumUser: false
-        })
-        .then(profileResult => {
-          res.json({
-            JWT: "JWT " + token
+  user
+    .findOne(
+      { id: req.body.id, provider: req.body.provider },
+      { id: 1, provider: 1, email: 1 }
+    )
+    .then(doc => {
+      if (doc) {
+        var token = jwt.sign(
+          JSON.parse(JSON.stringify({ id: doc.id, provider: doc.provider })),
+          "nodeauthsecret",
+          {
+            expiresIn: 365 * 24 * 60 * 60 * 1000
+          }
+        );
+        user
+          .updateOne(
+            { id: req.body.id, provider: req.body.provider },
+            {
+              $set: {
+                email: doc.email,
+                image: req.body.image,
+                fullName: req.body.fullName,
+                bio: "",
+                isPremiumUser: false
+              }
+            }
+          )
+          .then(() => {
+            res.json({
+              JWT: "JWT " + token
+            });
           });
-        });
-    } else {
-      res.status(401).end();
-    }
-  });
+      } else {
+        res.status(401).end();
+      }
+    });
 });
 
 router.post("/register", (req, res) => {
