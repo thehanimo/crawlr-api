@@ -9,6 +9,26 @@ var authRouter = require("./routes/auth");
 var usersRouter = require("./routes/users");
 var apiRouter = require("./routes/api");
 const passportSetup = require("./config/passport-setup");
+var swaggerUi = require("swagger-ui-express");
+var swaggerDocument = require("./swagger.json");
+
+// Swagger-UI disable Try it Out
+const DisableTryItOutPlugin = function() {
+  return {
+    statePlugins: {
+      spec: {
+        wrapSelectors: {
+          allowTryItOutFor: () => () => false
+        }
+      }
+    }
+  };
+};
+const options = {
+  swaggerOptions: {
+    plugins: [DisableTryItOutPlugin]
+  }
+};
 
 var app = express();
 
@@ -26,6 +46,11 @@ app.use("/", indexRouter);
 app.use("/api", apiRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, options)
+);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

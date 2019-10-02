@@ -15,7 +15,7 @@ router.get(
 );
 
 router.get(
-  "/webapp/linkedin",
+  "/linkedin",
   passport.authenticate("linkedin", { state: "webapp" }),
   function(req, res) {
     // The request will be redirected to LinkedIn for authentication, so this
@@ -111,7 +111,7 @@ router.post("/confirm", (req, res) => {
       });
       user
         .insertOne({
-          email: req.body.email,
+          email: doc.email,
           image: req.body.image,
           fullName: req.body.fullName,
           bio: "",
@@ -119,8 +119,7 @@ router.post("/confirm", (req, res) => {
         })
         .then(profileResult => {
           res.json({
-            JWT: "JWT " + token,
-            ...profileResult.ops[0]
+            JWT: "JWT " + token
           });
         });
     } else {
@@ -138,6 +137,6 @@ router.post("/test", passport.authenticate("jwt", { session: false }), function(
   req,
   res
 ) {
-  res.json({ ...req.user });
+  res.status(200).end();
 });
 module.exports = router;

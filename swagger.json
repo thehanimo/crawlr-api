@@ -1,0 +1,127 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.1",
+    "title": "crawlr API",
+    "description": "A detailed look at our RESTful API."
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "API to authenticate users."
+    }
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/auth/linkedin": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Links to LinkedIn's login page. On successful authentication, redirects to http://localhost:8000/login/{accessToken}"
+      }
+    },
+    "/auth/linkedin/callback/{accessToken}": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Verify user's accessToken",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "If a user is logging in for the first time.",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "200 ": {
+            "description": "If it is a returning user",
+            "schema": {
+              "$ref": "#/definitions/JWT"
+            }
+          },
+          "500 ": {
+            "description": "Internal Server Error - Unable to retrieve access token: authorization code not found"
+          }
+        }
+      }
+    },
+    "/auth/confirm": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Confirm user's details obtained from LinkedIn.",
+        "parameters": [
+          {
+            "name": " ",
+            "in": "body",
+            "description": "Send the profile back as a confirmation.",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "If it is a returning user",
+            "schema": {
+              "$ref": "#/definitions/JWT"
+            }
+          },
+          "401": {
+            "description": "If there is an error in the parameters, returns unauthorized status code."
+          }
+        }
+      }
+    },
+    "/auth/test": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "A dummy link to check the functioning of protected routes using JWT obtained.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "JWT": {
+      "properties": {
+        "JWT": {
+          "type": "string"
+        }
+      }
+    },
+    "Profile": {
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string",
+          "format": "base64"
+        }
+      }
+    }
+  }
+}
