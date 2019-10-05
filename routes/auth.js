@@ -85,8 +85,7 @@ router.post(
             { expiresIn: 365 * 24 * 60 * 60 * 1000 }
           );
           res.json({
-            JWT: "JWT " + token,
-            ...profile
+            JWT: "JWT " + token
           });
         }
       });
@@ -127,7 +126,10 @@ router.post("/confirm", (req, res) => {
                 image: req.body.image,
                 fullName: req.body.fullName,
                 bio: "",
-                isPremiumUser: false
+                isPremiumUser: false,
+                questions: 0,
+                searches: 0,
+                replies: 0
               }
             }
           )
