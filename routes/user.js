@@ -18,7 +18,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
   });
 });
 
-router.post("/bio", passport.authenticate("jwt", { session: false }), function(
+router.post("/", passport.authenticate("jwt", { session: false }), function(
   req,
   res
 ) {
@@ -28,7 +28,13 @@ router.post("/bio", passport.authenticate("jwt", { session: false }), function(
       { id: req.user.id, provider: req.user.provider },
       {
         $set: {
-          bio: req.body.bio
+          image: req.body.image || req.user.image,
+          fullName: req.body.fullName || req.user.fullName,
+          questions: req.body.questions || req.user.questions,
+          searches: req.body.searches || req.user.searches,
+          replies: req.body.replies || req.user.replies,
+          email: req.body.email || req.user.email,
+          bio: req.body.bio || req.user.bio
         }
       }
     )

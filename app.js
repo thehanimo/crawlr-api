@@ -6,7 +6,7 @@ var logger = require("morgan");
 
 var indexRouter = require("./routes/index");
 var authRouter = require("./routes/auth");
-var usersRouter = require("./routes/users");
+var userRouter = require("./routes/user");
 var apiRouter = require("./routes/api");
 const passportSetup = require("./config/passport-setup");
 var swaggerUi = require("swagger-ui-express");
@@ -45,7 +45,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
 app.use("/auth", authRouter);
-app.use("/users", usersRouter);
+app.use("/user", userRouter);
 app.use(
   "/api-docs",
   swaggerUi.serve,
