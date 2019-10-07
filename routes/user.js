@@ -25,15 +25,11 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
   const user = client.db("crawlr").collection("user");
   user
     .updateOne(
-      { id: req.user.id, provider: req.user.provider },
+      { _id: req.user._id },
       {
         $set: {
           image: req.body.image || req.user.image,
           fullName: req.body.fullName || req.user.fullName,
-          questions: req.body.questions || req.user.questions,
-          searches: req.body.searches || req.user.searches,
-          replies: req.body.replies || req.user.replies,
-          email: req.body.email || req.user.email,
           bio: req.body.bio || req.user.bio
         }
       }

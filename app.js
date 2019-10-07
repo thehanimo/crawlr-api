@@ -7,7 +7,8 @@ var logger = require("morgan");
 var indexRouter = require("./routes/index");
 var authRouter = require("./routes/auth");
 var userRouter = require("./routes/user");
-var apiRouter = require("./routes/api");
+var questionRouter = require("./routes/question");
+var replyRouter = require("./routes/reply");
 const passportSetup = require("./config/passport-setup");
 var swaggerUi = require("swagger-ui-express");
 var swaggerDocument = require("./swagger.json");
@@ -43,7 +44,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/api", apiRouter);
+app.use("/question", questionRouter);
+app.use("/reply", replyRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use(

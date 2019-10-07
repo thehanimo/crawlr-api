@@ -85,7 +85,8 @@ router.post(
             { expiresIn: 365 * 24 * 60 * 60 * 1000 }
           );
           res.json({
-            JWT: "JWT " + token
+            JWT: "JWT " + token,
+            UserID: doc._id
           });
         }
       });
@@ -135,7 +136,8 @@ router.post("/confirm", (req, res) => {
           )
           .then(() => {
             res.json({
-              JWT: "JWT " + token
+              JWT: "JWT " + token,
+              UserID: doc._id
             });
           });
       } else {
