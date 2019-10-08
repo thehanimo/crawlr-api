@@ -14,7 +14,8 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
     searches: req.user.searches,
     karma: req.user.karma,
     email: req.user.email,
-    bio: req.user.bio
+    bio: req.user.bio,
+    isPremiumUser: req.user.isPremiumUser
   });
 });
 
