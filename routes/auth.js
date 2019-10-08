@@ -128,6 +128,7 @@ router.post("/confirm", (req, res) => {
                 fullName: req.body.fullName,
                 bio: "",
                 isPremiumUser: false,
+                paymentID: null,
                 questions: 0,
                 searches: 0,
                 karma: 0

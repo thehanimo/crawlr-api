@@ -43,6 +43,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get("/logo.jpg", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/images/logo.jpg"));
+});
 app.use("/", indexRouter);
 app.use("/question", questionRouter);
 app.use("/reply", replyRouter);

@@ -30,7 +30,9 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
         $set: {
           image: req.body.image || req.user.image,
           fullName: req.body.fullName || req.user.fullName,
-          bio: req.body.bio || req.user.bio
+          bio: req.body.bio || req.user.bio,
+          isPremiumUser: req.body.paymentID ? true : false,
+          paymentID: req.body.paymentID || null
         }
       }
     )
