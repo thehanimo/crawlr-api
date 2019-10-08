@@ -12,7 +12,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
     fullName: req.user.fullName,
     questions: req.user.questions,
     searches: req.user.searches,
-    replies: req.user.replies,
+    karma: req.user.karma,
     email: req.user.email,
     bio: req.user.bio
   });

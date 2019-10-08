@@ -31,18 +31,7 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
         }
       }
     )
-    .then(() => {
-      user
-        .updateOne(
-          { _id: req.user._id },
-          {
-            $set: {
-              replies: req.user.replies + 1
-            }
-          }
-        )
-        .then(() => res.status(200).end());
-    })
+    .then(() => res.status(200).end())
     .catch(() => res.status(500).end());
 });
 router.get("/", passport.authenticate("jwt", { session: false }), function(
@@ -136,47 +125,46 @@ router.post(
   }
 );
 
-router.post(
-  "/delete",
-  passport.authenticate("jwt", { session: false }),
-  function(req, res) {
-    const user = client.db("crawlr").collection("user");
-    const question = client.db("crawlr").collection("question");
-    question
-      .findOne(
-        { _id: new ObjectID(req.body.QuestionID) },
-        {
-          askerID: 1,
-          replies: 1
-        }
-      )
-      .then(async doc => {
-        const { replies } = doc;
-        for (let i = 0; i < replies.length; i++) {
-          if (replies[i]._id.toString() === req.body.ReplyID.toString()) {
-            if (
-              doc.askerID.toString() === req.user._id.toString() ||
-              replies[i].responderID.toString() === req.user._id.toString()
-            )
-              replies.splice(i, 1);
-            break;
-          }
-        }
-        question
-          .updateOne(
-            {
-              _id: new ObjectID(req.body.QuestionID)
-            },
-            {
-              $set: {
-                replies: replies
-              }
-            }
+router.delete("/", passport.authenticate("jwt", { session: false }), function(
+  req,
+  res
+) {
+  const user = client.db("crawlr").collection("user");
+  const question = client.db("crawlr").collection("question");
+  question
+    .findOne(
+      { _id: new ObjectID(req.query.QuestionID) },
+      {
+        askerID: 1,
+        replies: 1
+      }
+    )
+    .then(async doc => {
+      const { replies } = doc;
+      for (let i = 0; i < replies.length; i++) {
+        if (replies[i]._id.toString() === req.query.ReplyID.toString()) {
+          if (
+            doc.askerID.toString() === req.user._id.toString() ||
+            replies[i].responderID.toString() === req.user._id.toString()
           )
-          .then(() => res.status(200).end());
-      })
-      .catch(() => res.status(500).end());
-  }
-);
+            replies.splice(i, 1);
+          break;
+        }
+      }
+      question
+        .updateOne(
+          {
+            _id: new ObjectID(req.query.QuestionID)
+          },
+          {
+            $set: {
+              replies: replies
+            }
+          }
+        )
+        .then(() => res.status(200).end());
+    })
+    .catch(() => res.status(500).end());
+});
 
 module.exports = router;

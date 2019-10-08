@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const passport = require("passport");
 const client = require("../db");
+const ObjectID = require("mongodb").ObjectID;
 
 router.post("/", passport.authenticate("jwt", { session: false }), function(
   req,
@@ -37,6 +38,7 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
   const question = client.db("crawlr").collection("question");
   const user = client.db("crawlr").collection("user");
   var pageNo = parseInt(req.query.pageNo);
+  var untilPage = parseInt(req.query.untilPage);
   var size = 10;
   var query = {};
   if (pageNo < 0 || pageNo === 0) {
@@ -48,6 +50,11 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
   }
   query.skip = size * (pageNo - 1);
   query.limit = size;
+  if (untilPage) {
+    query.skip = 0;
+    query.limit = size * untilPage;
+  }
+
   question
     .find()
     .skip(query.skip)
@@ -74,6 +81,42 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
       }
       res.json({
         data: data
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).end();
+    });
+});
+
+router.delete("/", passport.authenticate("jwt", { session: false }), function(
+  req,
+  res
+) {
+  const user = client.db("crawlr").collection("user");
+  const question = client.db("crawlr").collection("question");
+  question
+    .findOne(
+      { _id: new ObjectID(req.query.QuestionID) },
+      {
+        askerID: 1,
+        _id: 1
+      }
+    )
+    .then(async doc => {
+      if (req.user._id.toString() !== doc.askerID.toString())
+        res.status(500).end();
+      question.deleteOne({ _id: doc._id }).then(() => {
+        user
+          .updateOne(
+            { _id: req.user._id },
+            {
+              $set: {
+                questions: req.user.questions - 1
+              }
+            }
+          )
+          .then(() => res.status(200).end());
       });
     })
     .catch(err => {
