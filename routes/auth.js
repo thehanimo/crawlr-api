@@ -125,7 +125,9 @@ router.post("/confirm", (req, res) => {
               $set: {
                 email: doc.email,
                 rawImage: req.body.image,
-                image: `https://crawlr-api.herokuapp.com/user/image?id=${doc._id}`,
+                image: `https://crawlr-api.herokuapp.com/user/image?id=${
+                  doc._id
+                }&timestamp=${Date.now()}`,
                 fullName: req.body.fullName,
                 bio: "",
                 isPremiumUser: false,

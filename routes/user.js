@@ -31,6 +31,11 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
       {
         $set: {
           rawImage: req.body.image || req.user.rawImage,
+          image: req.body.image
+            ? `https://crawlr-api.herokuapp.com/user/image?id=${
+                req.user._id
+              }&timestamp=${Date.now()}`
+            : req.user.image,
           fullName: req.body.fullName || req.user.fullName,
           bio: req.body.bio || req.user.bio,
           isPremiumUser: req.body.paymentID ? true : false,
