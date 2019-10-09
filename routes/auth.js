@@ -107,7 +107,7 @@ router.post("/confirm", (req, res) => {
   user
     .findOne(
       { id: req.body.id, provider: req.body.provider },
-      { id: 1, provider: 1, email: 1 }
+      { id: 1, provider: 1, email: 1, _id: 1 }
     )
     .then(doc => {
       if (doc) {
@@ -124,7 +124,8 @@ router.post("/confirm", (req, res) => {
             {
               $set: {
                 email: doc.email,
-                image: req.body.image,
+                rawImage: req.body.image,
+                image: `https://crawlr-api.herokuapp.com/user/image?id=${doc._id}`,
                 fullName: req.body.fullName,
                 bio: "",
                 isPremiumUser: false,
