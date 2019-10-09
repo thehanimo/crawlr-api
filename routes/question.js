@@ -80,7 +80,9 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
         });
       }
       res.json({
-        data: data
+        data,
+        pageNo,
+        untilPage: untilPage ? true : false
       });
     })
     .catch(err => {

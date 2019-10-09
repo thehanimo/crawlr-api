@@ -89,10 +89,13 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
       //     else return 1;
       //   });
       res.json({
-        data: data
+        data,
+        pageNo,
+        untilPage: untilPage ? true : false
       });
     })
     .catch(err => {
+      console.log(err);
       res.status(500).end();
     });
 });
