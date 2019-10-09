@@ -46,7 +46,7 @@ router.post(
             });
           }
           var photoURI;
-          if (req.user.photos == []) {
+          if (!req.user.photos) {
             res.json({
               provider: req.user.provider,
               email: req.user.emails[0].value,
@@ -75,7 +75,7 @@ router.post(
                 });
               })
               .on("error", e => {
-                console.log(`Got error: ${e.message}`);
+                res.status(500).end();
               });
           }
         } else {
