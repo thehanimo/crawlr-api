@@ -9,6 +9,7 @@ var authRouter = require("./routes/auth");
 var userRouter = require("./routes/user");
 var questionRouter = require("./routes/question");
 var replyRouter = require("./routes/reply");
+var searchRouter = require("./routes/search");
 const passportSetup = require("./config/passport-setup");
 var swaggerUi = require("swagger-ui-express");
 var swaggerDocument = require("./swagger.json");
@@ -49,6 +50,7 @@ app.get("/logo.jpg", (req, res) => {
 app.use("/", indexRouter);
 app.use("/question", questionRouter);
 app.use("/reply", replyRouter);
+app.use("/search", searchRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use(

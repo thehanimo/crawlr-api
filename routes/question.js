@@ -31,6 +31,7 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
     })
     .catch(() => res.status(500).end());
 });
+
 router.get("/all", passport.authenticate("jwt", { session: false }), function(
   req,
   res
