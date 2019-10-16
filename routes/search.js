@@ -15,7 +15,7 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
     .insertOne({
       askerID: req.user._id,
       timestamp: Date.now(),
-      term: req.body.term,
+      searchQuery: req.body.searchQuery,
       status: "P"
     })
     .then(result => {
@@ -38,9 +38,8 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
         .then(() => {
           res.status(200).end();
           var options = {
-            host: "localhost",
-            port: 8000,
-            path: `/api/?q=${req.body.term}&id=${result.insertedId}`
+            host: "crawlr-core.herokuapp.com",
+            path: `/api/?q=${req.body.searchQuery}&id=${result.insertedId}`
           };
 
           http.get(options, function(res) {
