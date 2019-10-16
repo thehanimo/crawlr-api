@@ -39,6 +39,7 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
           res.status(200).end();
           var options = {
             host: "crawlr-core.herokuapp.com",
+            auth: "crawlrTopSecret",
             path: `/api/?q=${req.body.searchQuery}&id=${result.insertedId}`
           };
 
