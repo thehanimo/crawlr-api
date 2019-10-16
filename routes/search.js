@@ -39,6 +39,8 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
           res.status(200).end();
           var options = {
             host: "crawlr-core.herokuapp.com",
+            // host: "localhost",
+            // port: 8000,
             auth: "crawlrTopSecret",
             path: `/api/?q=${req.body.searchQuery}&id=${result.insertedId}`
           };
@@ -65,13 +67,13 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
   var SearchID = new ObjectID(req.query.searchID);
 
   search
-    .findOne({ _id: SearchID })
+    .findOne({ _id: SearchID }, { result: 1, askerID: 1 })
     .then(doc => {
-      if (req.user.id !== doc.askerID) {
+      if (req.user._id.toString() !== doc.askerID.toString()) {
         res.status(401).end();
         return;
       }
-      res.json(doc);
+      res.json({ result: doc.result });
     })
     .catch(err => {
       console.log(err);
@@ -135,21 +137,54 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
 
 router.post("/result", function(req, res) {
   const search = client.db("crawlr").collection("search");
-  error = req.body.error;
+  mainErr = req.body.result.MAIN_ERROR;
+  error = req.body.result.error || mainErr ? "ERR" : "D";
   id = req.body.id;
-  out = req.body;
+  out = req.body.result;
   delete out["id"];
   var SearchID = new ObjectID(id);
-  search.updateOne(
-    { _id: SearchID },
-    {
-      $set: {
-        result: out,
-        status: error ? "ERR" : "D"
-      }
+  search.findOne({ _id: SearchID }).then(doc => {
+    if (doc.status === "C") {
+      res.status(200).end();
+      return;
     }
-  );
-  res.status(200).end();
+    search.updateOne(
+      { _id: SearchID },
+      {
+        $set: {
+          result: out,
+          status: error,
+          MAIN_ERROR: mainErr ? mainErr : false
+        }
+      }
+    );
+    res.status(200).end();
+  });
 });
+
+router.delete(
+  "/cancel",
+  passport.authenticate("jwt", { session: false }),
+  function(req, res) {
+    const search = client.db("crawlr").collection("search");
+    var SearchID = new ObjectID(req.query.id);
+    search.findOne({ _id: SearchID }).then(doc => {
+      if (req.user._id.toString() !== doc.askerID.toString()) {
+        res.status(401).end();
+        return;
+      }
+      search.updateOne(
+        { _id: SearchID },
+        {
+          $set: {
+            status: "C",
+            MAIN_ERROR: "You cancelled this search"
+          }
+        }
+      );
+      res.status(200).end();
+    });
+  }
+);
 
 module.exports = router;

@@ -133,7 +133,7 @@ router.post("/confirm", (req, res) => {
                 isPremiumUser: false,
                 paymentID: null,
                 questions: 0,
-                searches: 0,
+                searches: [],
                 karma: 0
               }
             }
