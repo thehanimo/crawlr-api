@@ -78,6 +78,60 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
     });
 });
 
+router.get("/all", passport.authenticate("jwt", { session: false }), function(
+  req,
+  res
+) {
+  const search = client.db("crawlr").collection("search");
+  const user = client.db("crawlr").collection("user");
+  var pageNo = parseInt(req.query.pageNo);
+  var untilPage = parseInt(req.query.untilPage);
+  var size = 10;
+  var query = {};
+  if (pageNo < 0 || pageNo === 0) {
+    response = {
+      error: true,
+      message: "invalid page number, should start with 1"
+    };
+    return res.json(response);
+  }
+  query.skip = size * (pageNo - 1);
+  query.limit = size;
+  if (untilPage) {
+    query.skip = 0;
+    query.limit = size * untilPage;
+  }
+
+  user
+    .findOne({ _id: req.user._id }, { searches: 1 })
+    .then(async doc => {
+      var data = [];
+      if (query.skip >= doc.searches.length) var searchesArray = [];
+      else
+        searchesArray = doc.searches.splice(
+          query.skip,
+          query.skip + query.limit
+        );
+      for (let i = 0; i < searchesArray.length; i++) {
+        var searchID = searchesArray[i]._id;
+        var searchDoc = await search.findOne(
+          { _id: searchID },
+          { _id: 1, timestamp: 1, searchQuery: 1, status: 1 }
+        );
+        data.push({ ...searchDoc });
+      }
+      res.json({
+        data,
+        pageNo,
+        untilPage: untilPage ? true : false
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).end();
+    });
+});
+
 router.post("/result", function(req, res) {
   const search = client.db("crawlr").collection("search");
   error = req.body.error;
