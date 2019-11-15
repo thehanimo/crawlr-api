@@ -7,6 +7,9 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true
 });
 
-client.connect();
+client.connect().then(() => {
+  const trending = client.db("crawlr").collection("trending");
+  trending.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
+});
 
 module.exports = client;

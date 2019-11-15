@@ -11,12 +11,15 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
 ) {
   const user = client.db("crawlr").collection("user");
   const search = client.db("crawlr").collection("search");
+  var expireDate = new Date();
+  expireDate.setDate(expireDate.getDate() + 30);
   search
     .insertOne({
       askerID: req.user._id,
       timestamp: Date.now(),
       searchQuery: req.body.searchQuery,
-      status: "P"
+      status: "P",
+      expireAt: expireDate
     })
     .then(result => {
       user
@@ -121,7 +124,7 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
           { _id: searchID },
           { _id: 1, timestamp: 1, searchQuery: 1, status: 1 }
         );
-        data.push({ ...searchDoc });
+        if (searchDoc) data.push({ ...searchDoc });
       }
       res.json({
         data,
@@ -141,8 +144,44 @@ router.post("/result", function(req, res) {
   error = req.body.result.error || mainErr ? "ERR" : "D";
   id = req.body.id;
   out = req.body.result;
+  term = req.body.term;
   delete out["id"];
   var SearchID = new ObjectID(id);
+
+  if (error !== "ERR") {
+    const trending = client.db("crawlr").collection("trending");
+
+    curr = new Date();
+
+    nextHour = new Date();
+    nextHour.setHours(nextHour.getHours() + 1, 31, 0, 0);
+
+    var minutesRemaining = new Date(nextHour - curr).getMinutes();
+
+    if (minutesRemaining < 5)
+      nextHour.setHours(nextHour.getHours() + 2, 31, 0, 0);
+
+    trending.findOne({ searchQuery: term }).then(doc => {
+      if (!doc) {
+        trending.insertOne({
+          expireAt: nextHour,
+          searchQuery: term,
+          points: 100
+        });
+      } else {
+        trending.updateOne(
+          { searchQuery: term },
+          {
+            $set: {
+              points: doc.points + 100,
+              expireAt: nextHour
+            }
+          }
+        );
+      }
+    });
+  }
+
   search.findOne({ _id: SearchID }).then(doc => {
     if (doc.status === "C") {
       res.status(200).end();
