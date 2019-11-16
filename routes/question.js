@@ -42,6 +42,7 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
   var untilPage = parseInt(req.query.untilPage);
   var size = 10;
   var query = {};
+  var uid = req.query.uid;
   if (pageNo < 0 || pageNo === 0) {
     response = {
       error: true,
@@ -55,10 +56,13 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
     query.skip = 0;
     query.limit = size * untilPage;
   }
-
-  question
-    .find()
-    .skip(query.skip)
+  if (!uid) {
+    Q = question.find();
+  } else {
+    var AskerID = new ObjectID(uid);
+    Q = question.find({ askerID: AskerID });
+  }
+  Q.skip(query.skip)
     .limit(query.limit)
     .sort({ timestamp: -1 })
     .toArray()
