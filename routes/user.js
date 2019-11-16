@@ -8,16 +8,49 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
   req,
   res
 ) {
-  res.json({
-    image: req.user.image,
-    fullName: req.user.fullName,
-    questions: req.user.questions,
-    searches: req.user.searches,
-    karma: req.user.karma,
-    email: req.user.email,
-    bio: req.user.bio,
-    isPremiumUser: req.user.isPremiumUser
-  });
+  var uid = req.query.uid;
+  var one_day = 1000 * 60 * 60 * 24;
+  var present_date = new Date();
+  const user = client.db("crawlr").collection("user");
+
+  if (!uid) {
+    joinDate = new Date(req.user.joinDate);
+    var Result =
+      Math.round(present_date.getTime() - joinDate.getTime()) / one_day;
+    var karma = Math.floor(
+      Result.toFixed(0) + req.user.searches + req.user.questions * 0.5
+    );
+    res.json({
+      image: req.user.image,
+      fullName: req.user.fullName,
+      questions: req.user.questions,
+      searches: req.user.searches,
+      karma,
+      email: req.user.email,
+      bio: req.user.bio,
+      isPremiumUser: req.user.isPremiumUser
+    });
+  } else {
+    var UserID = new ObjectID(uid);
+    user.findOne({ _id: UserID }).then(doc => {
+      joinDate = new Date(doc.joinDate);
+      var Result =
+        Math.round(present_date.getTime() - joinDate.getTime()) / one_day;
+      var karma = Math.floor(
+        Result.toFixed(0) + doc.searches + doc.questions * 0.5
+      );
+      res.json({
+        image: doc.image,
+        fullName: doc.fullName,
+        questions: doc.questions,
+        searches: doc.searches,
+        karma,
+        email: doc.email,
+        bio: doc.bio,
+        isPremiumUser: doc.isPremiumUser
+      });
+    });
+  }
 });
 
 router.post("/", passport.authenticate("jwt", { session: false }), function(

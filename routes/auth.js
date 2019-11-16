@@ -134,7 +134,7 @@ router.post("/confirm", (req, res) => {
                 paymentID: null,
                 questions: 0,
                 searches: [],
-                karma: 0
+                joinDate: Date.now()
               }
             }
           )
