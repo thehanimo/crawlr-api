@@ -4,10 +4,7 @@ const passport = require("passport");
 const client = require("../db");
 const ObjectID = require("mongodb").ObjectID;
 
-router.get("/", passport.authenticate("jwt", { session: false }), function(
-  req,
-  res
-) {
+router.get("/", function(req, res) {
   const trending = client.db("crawlr").collection("trending");
 
   trending
@@ -17,7 +14,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
     .limit(10)
     .toArray()
     .then(data => {
-      res.json({
+      res.status(200).json({
         data
       });
     });

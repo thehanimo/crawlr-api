@@ -150,11 +150,6 @@ router.post("/confirm", (req, res) => {
     });
 });
 
-router.post("/register", (req, res) => {
-  //Extract req.body and save/update profile to db here!!
-  res.status(200).end();
-});
-
 router.post("/test", passport.authenticate("jwt", { session: false }), function(
   req,
   res

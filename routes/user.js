@@ -20,7 +20,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
     var karma = Math.floor(
       Result.toFixed(0) + req.user.searches + req.user.questions * 0.5
     );
-    res.json({
+    res.status(200).json({
       image: req.user.image,
       fullName: req.user.fullName,
       questions: req.user.questions,
@@ -39,7 +39,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
       var karma = Math.floor(
         Result.toFixed(0) + doc.searches + doc.questions * 0.5
       );
-      res.json({
+      res.status(200).json({
         image: doc.image,
         fullName: doc.fullName,
         questions: doc.questions,

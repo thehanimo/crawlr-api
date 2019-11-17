@@ -9,33 +9,91 @@
     {
       "name": "Auth",
       "description": "API to authenticate users."
+    },
+    {
+      "name": "User",
+      "description": "API to manage user profile."
+    },
+    {
+      "name": "Search",
+      "description": "API to execute and manage searches."
+    },
+    {
+      "name": "Trending",
+      "description": "API to view trending searches."
+    },
+    {
+      "name": "Question",
+      "description": "API to manage questions."
+    },
+    {
+      "name": "Reply",
+      "description": "API to manage replies to a question."
     }
   ],
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/auth/linkedin": {
+    "/auth/app/linkedin": {
       "get": {
         "tags": ["Auth"],
         "summary": "Links to LinkedIn's login page. On successful authentication, redirects to http://localhost:8000/login/{accessToken}"
       }
     },
-    "/auth/linkedin/callback/{accessToken}": {
+    "/auth/linkedin/callback/?code&state": {
       "post": {
         "tags": ["Auth"],
-        "description": "Verify user's accessToken",
+        "summary": "Verify user's accessToken",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Send the profile back as a confirmation."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Send the profile back as a confirmation."
+          }
+        ],
         "produces": ["application/json"],
         "responses": {
           "200": {
             "description": "If a user is logging in for the first time.",
             "schema": {
-              "$ref": "#/definitions/Profile"
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "image": {
+                  "type": "string",
+                  "format": "base64"
+                }
+              }
             }
           },
           "200 ": {
             "description": "If it is a returning user",
             "schema": {
-              "$ref": "#/definitions/JWT"
+              "type": "object",
+              "properties": {
+                "JWT": {
+                  "type": "string"
+                },
+                "UserID": {
+                  "type": "string"
+                }
+              }
             }
           },
           "500 ": {
@@ -47,23 +105,49 @@
     "/auth/confirm": {
       "post": {
         "tags": ["Auth"],
-        "description": "Confirm user's details obtained from LinkedIn.",
+        "summary": "Confirm user's details obtained from LinkedIn.",
         "parameters": [
           {
             "name": " ",
             "in": "body",
             "description": "Send the profile back as a confirmation.",
             "schema": {
-              "$ref": "#/definitions/Profile"
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "image": {
+                  "type": "string",
+                  "format": "base64"
+                }
+              }
             }
           }
         ],
         "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "If it is a returning user",
+            "description": "If the user is authenticated",
             "schema": {
-              "$ref": "#/definitions/JWT"
+              "type": "object",
+              "properties": {
+                "JWT": {
+                  "type": "string"
+                },
+                "UserID": {
+                  "type": "string"
+                }
+              }
             }
           },
           "401": {
@@ -93,35 +177,527 @@
           }
         }
       }
-    }
-  },
-  "definitions": {
-    "JWT": {
-      "properties": {
-        "JWT": {
-          "type": "string"
+    },
+    "/user/?uid": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Link to obtain user profile",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "description": "Optional UserID. Returns self profile if not specified."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "questions": {
+                  "type": "integer"
+                },
+                "searches": {
+                  "type": "integer"
+                },
+                "karma": {
+                  "type": "integer"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "bio": {
+                  "type": "string"
+                },
+                "isPremiumUser": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
         }
       }
     },
-    "Profile": {
-      "properties": {
-        "provider": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "fullName": {
-          "type": "string"
-        },
-        "image": {
-          "type": "string",
-          "format": "base64"
+    "/user/": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Link to update user profile",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "Updated Profile",
+            "in": "body",
+            "description": "Send the updated profile fields.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "bio": {
+                  "type": "string"
+                },
+                "paymentID": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/image?id": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Link to get user's profile image.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Required UserID."
+          }
+        ],
+        "produces": ["application/jpg"],
+        "responses": {
+          "200": {
+            "description": "A JPG/PNG file."
+          },
+          "404": {
+            "description": "Not Found."
+          }
+        }
+      }
+    },
+    "/search/": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Add a new search.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "New Search",
+            "in": "body",
+            "description": "Send the new search query.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "searchQuery": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/search/all?pageNo&untilPage": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "View all searches.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "pageNo",
+            "in": "query",
+            "description": "Required. Specifies the page of searches to return."
+          },
+          {
+            "name": "untilPage",
+            "in": "query",
+            "description": "Optional. Specifies if all pages until pageNo are needed."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "pageNo": {
+                  "type": "integer"
+                },
+                "untilPage": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/search/cancel?id": {
+      "delete": {
+        "tags": ["Search"],
+        "summary": "Cancel a search.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Required. Specifies the id of the search to be cancelled."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/trending": {
+      "get": {
+        "tags": ["Trending"],
+        "summary": "Get top 10 search queries from the last hour.",
+        "parameters": [],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/question/": {
+      "post": {
+        "tags": ["Question"],
+        "summary": "Add a new question.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "New Question",
+            "in": "body",
+            "description": "Send the new question body.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/question/all?pageNo&untilPage&uid": {
+      "get": {
+        "tags": ["Question"],
+        "summary": "View all questions.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "pageNo",
+            "in": "query",
+            "description": "Required. Specifies the page of questions to return."
+          },
+          {
+            "name": "untilPage",
+            "in": "query",
+            "description": "Optional. Specifies if all pages until pageNo are needed."
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "description": "Optional. Questions asked by this specific user is returned if specified."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "pageNo": {
+                  "type": "integer"
+                },
+                "untilPage": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/question?QuestionID": {
+      "delete": {
+        "tags": ["Question"],
+        "summary": "Delete a question.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "QuestionID",
+            "in": "query",
+            "description": "Required. Specifies the id of the question to be deleted."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/reply/": {
+      "post": {
+        "tags": ["Reply"],
+        "summary": "Add a new reply to a question.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "New Question",
+            "in": "body",
+            "description": "Send the new question body.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "reply": {
+                  "type": "string"
+                },
+                "QuestionID": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/reply?pageNo&untilPage&questionID": {
+      "get": {
+        "tags": ["Reply"],
+        "summary": "View all replies to a question.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "questionID",
+            "in": "query",
+            "description": "Required. Specifies the question whose replies are needed."
+          },
+          {
+            "name": "pageNo",
+            "in": "query",
+            "description": "Required. Specifies the page of replies to return."
+          },
+          {
+            "name": "untilPage",
+            "in": "query",
+            "description": "Optional. Specifies if all pages until pageNo are needed."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "pageNo": {
+                  "type": "integer"
+                },
+                "untilPage": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/reply?id&QuestionID": {
+      "delete": {
+        "tags": ["Reply"],
+        "summary": "Delete a reply.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "QuestionID",
+            "in": "query",
+            "description": "Required. Specifies the id of the question to be deleted."
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Required. Specifies the id of the reply to be deleted."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
         }
       }
     }
+  },
+  "definitions": {
+    "Profile": {}
   }
 }
