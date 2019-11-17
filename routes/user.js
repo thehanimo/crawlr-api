@@ -18,7 +18,9 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
     var Result =
       Math.round(present_date.getTime() - joinDate.getTime()) / one_day;
     var karma = Math.floor(
-      Result.toFixed(0) + req.user.searches + req.user.questions * 0.5
+      parseInt(Result.toFixed(0)) * 100 +
+        req.user.searches.length +
+        req.user.questions * 0.5
     );
     res.status(200).json({
       image: req.user.image,
@@ -36,7 +38,11 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
       joinDate = new Date(doc.joinDate);
       var Result =
         Math.round(present_date.getTime() - joinDate.getTime()) / one_day;
-      var karma = Math.round(Result.toFixed(0) + doc.searches + doc.questions);
+      var karma = Math.floor(
+        parseInt(Result.toFixed(0)) * 100 +
+          req.user.searches.length +
+          req.user.questions * 0.5
+      );
       res.status(200).json({
         image: doc.image,
         fullName: doc.fullName,
