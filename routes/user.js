@@ -36,9 +36,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
       joinDate = new Date(doc.joinDate);
       var Result =
         Math.round(present_date.getTime() - joinDate.getTime()) / one_day;
-      var karma = Math.floor(
-        Result.toFixed(0) + doc.searches + doc.questions * 0.5
-      );
+      var karma = Math.round(Result.toFixed(0) + doc.searches + doc.questions);
       res.status(200).json({
         image: doc.image,
         fullName: doc.fullName,
