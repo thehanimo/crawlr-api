@@ -698,6 +698,143 @@
     }
   },
   "definitions": {
-    "Profile": {}
+    "Profile": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "image": {
+          "type": "url"
+        },
+        "isPremiumUser": {
+          "type": "boolean"
+        },
+        "joinDate": {
+          "type": "date"
+        },
+        "paymentID": {
+          "type": "string"
+        },
+        "questions": {
+          "type": "number"
+        },
+        "rawImage": {
+          "type": "base64 string"
+        },
+        "searches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Question": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "askerID": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "body": {
+          "type": "string"
+        },
+        "replies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "responderID": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "date"
+              },
+              "body": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Search": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "askerID": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "searchQuery": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "expireAt": {
+          "type": "date"
+        },
+        "MAIN_ERROR": {
+          "type": "boolean"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "Trending": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "searchQuery": {
+          "type": "string"
+        },
+        "expireAt": {
+          "type": "date"
+        },
+        "points": {
+          "type": "number"
+        }
+      }
+    }
   }
 }
