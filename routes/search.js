@@ -39,7 +39,12 @@ router.post("/", passport.authenticate("jwt", { session: false }), function(
           }
         )
         .then(() => {
-          res.status(200).end();
+          res
+            .status(200)
+            .json({
+              id: result.insertedId
+            })
+            .end();
           var options = {
             host: "crawlr-core.herokuapp.com",
             // host: "localhost",
