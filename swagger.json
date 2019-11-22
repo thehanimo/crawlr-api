@@ -338,6 +338,68 @@
         }
       }
     },
+    "/search?searchID": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "View search results",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Add JWT in the Authorization field in the header of the request."
+          },
+          {
+            "name": "searchID",
+            "in": "query",
+            "description": "Required. Specifies the ID of the search whose results are to be found."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "askerID": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "date"
+                },
+                "searchQuery": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "expireAt": {
+                  "type": "date"
+                },
+                "MAIN_ERROR": {
+                  "type": "boolean"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/search/all?pageNo&untilPage": {
       "get": {
         "tags": ["Search"],

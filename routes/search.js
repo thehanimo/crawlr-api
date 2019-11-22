@@ -81,7 +81,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), function(
         res.status(401).end();
         return;
       }
-      res.json({ result: doc.result });
+      res.json(doc);
     })
     .catch(err => {
       console.log(err);
@@ -127,9 +127,11 @@ router.get("/all", passport.authenticate("jwt", { session: false }), function(
         var searchID = searchesArray[i]._id;
         var searchDoc = await search.findOne(
           { _id: searchID },
-          { _id: 1, timestamp: 1, searchQuery: 1, status: 1 }
+          { projection: { result: 0 } }
         );
-        if (searchDoc) data.push({ ...searchDoc });
+        if (searchDoc) {
+          data.push({ ...searchDoc });
+        }
       }
       res.json({
         data,
