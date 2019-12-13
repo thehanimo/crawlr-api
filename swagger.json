@@ -29,6 +29,10 @@
     {
       "name": "Reply",
       "description": "API to manage replies to a question."
+    },
+    {
+      "name": "Email",
+      "description": "API to check if email is disposable."
     }
   ],
   "consumes": ["application/json"],
@@ -754,6 +758,36 @@
           },
           "401": {
             "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/email?id": {
+      "get": {
+        "tags": ["Email"],
+        "summary": "Check if an email is disposable",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Required. Specifies the Email ID to be checked."
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "disposable": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error."
           }
         }
       }
